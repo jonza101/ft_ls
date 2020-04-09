@@ -6,73 +6,12 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 23:17:45 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 19:51:28 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/09 22:05:15 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
 
-
-void	ft_sort_time(t_ls *ls, t_elem *elem_head)
-{
-	t_elem *elem = elem_head;
-	while (elem)
-	{
-		t_elem *nxt = elem->next;
-		while (nxt)
-		{
-			int elem_cmp = ft_strcmp(elem->name, nxt->name);
-			int e_time = elem->time_diff;
-			int n_time = nxt->time_diff;
-			if (ls->flag->r)
-			{
-				e_time = -e_time;
-				n_time = -n_time;
-			}
-			if (e_time > n_time)
-			{
-				char *temp_name = elem->name;
-				char *temp_path = elem->path;
-				long long temp_time = elem->time_diff;
-				elem->name = nxt->name;
-				elem->path = nxt->path;
-				elem->time_diff = nxt->time_diff;
-				nxt->name = temp_name;
-				nxt->path = temp_path;
-				nxt->time_diff = temp_time;
-			}
-			
-			nxt = nxt->next;
-		}
-		elem = elem->next;
-	}
-}
-
-void	ft_sort_ascii(t_ls *ls, t_elem *elem_head)
-{
-	t_elem *elem = elem_head;
-	while (elem)
-	{
-		t_elem *nxt = elem->next;
-		while (nxt)
-		{
-			int elem_cmp = ft_strcmp(elem->name, nxt->name);
-			elem_cmp = (ls->flag->r) ? -elem_cmp : elem_cmp;
-			if (elem_cmp > 0) 				//	NOT SURE ABOUT IT
-			{
-				char *temp_name = elem->name;
-				char *temp_path = elem->path;
-				elem->name = nxt->name;
-				elem->path = nxt->path;
-				nxt->name = temp_name;
-				nxt->path = temp_path;
-			}
-			
-			nxt = nxt->next;
-		}
-		elem = elem->next;
-	}
-}
 
 void	ft_read_dir(t_ls *ls, char *path)
 {
@@ -89,10 +28,18 @@ void	ft_read_dir(t_ls *ls, char *path)
 
 	dir = opendir(path);
 	if (!dir)
-		return;
-
-	if (ls->elem_count || ls->flag->R)
 	{
+		char *err = ft_strjoin("Unable to open directory: ", path);
+		int len = ft_strlen(err);
+		write(1, err, len);
+		write(1, "\n", 1);
+		free(err);
+		return;
+	}
+
+	if (ls->elem_count > 1 || ls->flag->R)
+	{
+		(ls->dir_read) ? write(1, "\n", 1) : 1;
 		char *path_str = ft_strjoin(path, ":");
 		ft_putstr_endc(path_str, '\n');
 		free(path_str);
@@ -107,7 +54,7 @@ void	ft_read_dir(t_ls *ls, char *path)
 		char *elem_path = ft_strjoin(elem_path_s, entry->d_name);
 		free(elem_path_s);
 
-		stat(elem_path, &stat_buffer);
+		lstat(elem_path, &stat_buffer);
 		total += stat_buffer.st_blocks;
 
 		if (!elem_count)
@@ -155,14 +102,21 @@ void	ft_read_dir(t_ls *ls, char *path)
 
 	ls->sort[ls->flag->t](ls, elem_head);
 
+	int col = 0;
 	elem = elem_head;
 	while (elem)
 	{
-		stat(elem->path, &stat_buffer);
+		lstat(elem->path, &stat_buffer);
 		ft_output_elem(ls, elem->name, &stat_buffer);
 		elem = elem->next;
+		col++;
+		if (!ls->flag->l && col == COL)
+		{
+			write(1, "\n", 1);
+			col = 0;
+		}
 	}
-	if (!ls->flag->l)
+	if (!ls->flag->l && col)
 		write(1, "\n", 1);
 
 	if (!ls->flag->R)
@@ -170,12 +124,13 @@ void	ft_read_dir(t_ls *ls, char *path)
 	elem = elem_head;
 	while (elem)
 	{
-		stat(elem->path, &stat_buffer);
+		lstat(elem->path, &stat_buffer);
 		if (S_ISDIR(stat_buffer.st_mode))
 		{
 			if (ft_strcmp(elem->name, ".") && ft_strcmp(elem->name, ".."))
 			{
-				write(1, "\n", 1);
+				//write(1, "\n", 1);
+				ls->dir_read++;
 				ft_read_dir(ls, elem->path);
 			}
 		}
@@ -196,7 +151,7 @@ void	ft_read_elems(t_ls *ls, char **argv)
 	int i = -1;
 	while (++i < ls->elem_count)
 	{
-		stat(argv[ls->elem_idx[i]], &stat_buffer);
+		lstat(argv[ls->elem_idx[i]], &stat_buffer);
 		dir_count += S_ISDIR(stat_buffer.st_mode);
 
 		if (!elem_count)
@@ -229,18 +184,25 @@ void	ft_read_elems(t_ls *ls, char **argv)
 	}
 
 	ls->sort[ls->flag->t](ls, elem_head);
+	int col = 0;
 	elem = elem_head;
 	while (elem)
 	{
-		stat(elem->name, &stat_buffer);
+		lstat(elem->name, &stat_buffer);
 		if (!S_ISDIR(stat_buffer.st_mode))
 		{
 			ft_output_elem(ls, elem->name, &stat_buffer);
 			file_count++;
+			col++;
+			if (!ls->flag->l && col == COL)
+			{
+				write(1, "\n", 1);
+				col = 0;
+			}
 		}
 		elem = elem->next;
 	}
-	if (!ls->flag->l && file_count)
+	if (!ls->flag->l && file_count && col)
 		write(1, "\n", 1);
 
 	if (!dir_count)
@@ -249,24 +211,19 @@ void	ft_read_elems(t_ls *ls, char **argv)
 	elem = elem_head;
 	while (elem)
 	{
-		stat(elem->name, &stat_buffer);
+		lstat(elem->name, &stat_buffer);
 		if (S_ISDIR(stat_buffer.st_mode))
 		{
 			if (ft_strcmp(elem->name, ".") && ft_strcmp(elem->name, ".."))
 			{
-				(file_count) ? write(1, "\n", 1) : 1;
+				//write(1, "\n", 1);
 				ft_read_dir(ls, elem->name);
+				ls->dir_read++;
 			}
 		}
 		elem = elem->next;
 	}
 }
-
-void	ft_read(t_ls *ls, char **argv)
-{
-	ft_read_dir(ls, ".");
-}
-
 
 void	ft_read_flags(t_ls *ls, char *str)
 {
@@ -283,6 +240,8 @@ void	ft_read_flags(t_ls *ls, char *str)
 			ls->flag->r = 1;
 		else if (str[i] == 'R')
 			ls->flag->R = 1;
+		else if (str[i] == 'G')
+			ls->flag->G = 1;
 	}
 }
 
@@ -290,6 +249,7 @@ void	ft_read_args(t_ls *ls, int argc, char **argv)
 {
 	ls->elem_idx = (int*)malloc(sizeof(int) * (argc - 1));
 	ls->elem_count = 0;
+	ls->dir_read = 0;
 	struct stat stat_buffer;
 	int corr = 1;
 
@@ -313,5 +273,5 @@ void	ft_read_args(t_ls *ls, int argc, char **argv)
 		}
 	}
 
-	(!ls->elem_count && corr) ? ft_read(ls, argv) : ft_read_elems(ls, argv);
+	(!ls->elem_count && corr) ? ft_read_dir(ls, ".") : ft_read_elems(ls, argv);
 }

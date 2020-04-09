@@ -6,7 +6,7 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 15:19:21 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 19:00:10 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/09 21:45:20 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,14 @@
 
 
 #define COLOR_WHITE "\x1b[0m"
-#define COLOR_CYAN "\x1b[36m"
+#define COLOR_BLUE "\x1b[1;34m"
+#define COLOR_YELLOW "\x1b[01;33m"
+#define COLOR_GREEN "\x1b[1;32m"
+#define COLOR_RED "\x1b[1;31m"
+#define COLOR_MAGENTA "\x1b[1;35m"
+#define COLOR_CYAN "\x1b[1;36m"
+
+#define COL 4
 
 
 typedef struct		s_flag
@@ -36,6 +43,7 @@ typedef struct		s_flag
 	int 			t;
 	int				r;
 	int				R;
+	int 			G;
 }					t_flag;
 
 typedef struct		s_elem
@@ -57,6 +65,7 @@ typedef struct		s_ls
 
 	int				*elem_idx;
 	int				elem_count;
+	int 			dir_read;
 
 	void			(*sort[2])(struct s_ls *ls, t_elem *elem_head);
 }					t_ls;

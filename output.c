@@ -6,7 +6,7 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 23:19:30 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 19:46:40 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/09 21:28:59 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,32 +25,48 @@ void	ft_output_elem(t_ls *ls, char *name, struct stat *stat_buffer)
 	if (name[0] == '.' && !ls->flag->a)
 		return;
 
-	int is_directory = (S_ISDIR(stat_buffer->st_mode));
+	int mode = stat_buffer->st_mode & __S_IFMT;
+	char *color = COLOR_WHITE;
+
+	if (ls->flag->G)
+	{
+	if (S_ISDIR(mode))
+		color = COLOR_BLUE;
+	if (S_ISLNK(mode))
+		color = COLOR_YELLOW;
+	if (S_ISBLK(mode))
+		color = COLOR_GREEN;
+	if (S_ISCHR(mode))
+		color = COLOR_RED;
+	if (S_ISSOCK(mode))
+		color = COLOR_MAGENTA;
+	if (S_ISFIFO(mode))
+		color = COLOR_CYAN;
+	}
 
 	if (!ls->flag->l)
 	{
-		(is_directory) ? ft_putstr(COLOR_CYAN) : ft_putstr(COLOR_WHITE);
+		ft_putstr(color);
 		ft_putstr_endc(name, '\t');
 		ft_putstr(COLOR_WHITE);
 		return;
 	}
 
 	char *permissions = ft_strnew(10);
-	permissions[0] = '-';
-
-	int mode = stat_buffer->st_mode;
-	if (is_directory)
+	if (S_ISREG(mode))
+		permissions[0] = '-';
+	if (S_ISDIR(mode))
 		permissions[0] = 'd';
-	else if (S_ISLNK(mode))
+	if (S_ISLNK(mode))
 		permissions[0] = 'l';
-	else if (S_ISBLK(mode))
+	if (S_ISBLK(mode))
 		permissions[0] = 'b';
-	else if (S_ISCHR(mode))
+	if (S_ISCHR(mode))
 		permissions[0] = 'c';
-	else if (S_ISFIFO(mode))
-		permissions[0] = 'p';
-	else if (S_ISSOCK(mode))
+	if (S_ISSOCK(mode))
 		permissions[0] = 's';
+	if (S_ISFIFO(mode))
+		permissions[0] = 'p';
 
 	permissions[1] = (stat_buffer->st_mode & S_IRUSR) ? 'r' : '-';
 	permissions[2] = (stat_buffer->st_mode & S_IWUSR) ? 'w' : '-';
@@ -85,7 +101,7 @@ void	ft_output_elem(t_ls *ls, char *name, struct stat *stat_buffer)
 	ft_putstr_endc(gid, '\t');
 	ft_putstr_endc(size, '\t');
 	ft_putstr_endc(mod_time, '\t');
-	(is_directory) ? ft_putstr(COLOR_CYAN) : ft_putstr(COLOR_WHITE);
+	ft_putstr(color);
 	ft_putstr_endc(name, '\n');
 	ft_putstr(COLOR_WHITE);
 

@@ -6,7 +6,7 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 15:17:42 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 19:00:26 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/09 21:28:21 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int		main(int argc, char **argv)
 	ls->flag->t = 0;
 	ls->flag->r = 0;
 	ls->flag->R = 0;
+	ls->flag->G = 0;
 
 	ls->sort[0] = ft_sort_ascii;
 	ls->sort[1] = ft_sort_time;
