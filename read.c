@@ -6,7 +6,7 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 23:17:45 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 19:44:55 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/09 19:51:28 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,6 +191,7 @@ void	ft_read_elems(t_ls *ls, char **argv)
 	t_elem *elem_head = NULL;
 	int elem_count = 0;
 	int dir_count = 0;
+	int file_count = 0;
 
 	int i = -1;
 	while (++i < ls->elem_count)
@@ -233,10 +234,13 @@ void	ft_read_elems(t_ls *ls, char **argv)
 	{
 		stat(elem->name, &stat_buffer);
 		if (!S_ISDIR(stat_buffer.st_mode))
+		{
 			ft_output_elem(ls, elem->name, &stat_buffer);
+			file_count++;
+		}
 		elem = elem->next;
 	}
-	if (!ls->flag->l)
+	if (!ls->flag->l && file_count)
 		write(1, "\n", 1);
 
 	if (!dir_count)
@@ -250,7 +254,7 @@ void	ft_read_elems(t_ls *ls, char **argv)
 		{
 			if (ft_strcmp(elem->name, ".") && ft_strcmp(elem->name, ".."))
 			{
-				write(1, "\n", 1);
+				(file_count) ? write(1, "\n", 1) : 1;
 				ft_read_dir(ls, elem->name);
 			}
 		}
