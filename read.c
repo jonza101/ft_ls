@@ -6,7 +6,7 @@
 /*   By: zjeyne-l <zjeyne-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/07 23:17:45 by zjeyne-l          #+#    #+#             */
-/*   Updated: 2020/04/09 22:05:15 by zjeyne-l         ###   ########.fr       */
+/*   Updated: 2020/04/11 16:31:20 by zjeyne-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,8 @@ void	ft_read_elems(t_ls *ls, char **argv)
 
 	if (!dir_count)
 		return;
+	if (file_count)
+		write(1, "\n", 1);
 
 	elem = elem_head;
 	while (elem)
